@@ -2,4 +2,4 @@
 2. conda env update --file environment.yaml
 3. hf auth login
 4. paste token
-5. 
+5. python download.py
