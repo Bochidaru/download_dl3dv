@@ -1,0 +1,13 @@
+name: dl3dv_env
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - pip
+  - pandas
+  - tqdm
+  - numpy
+  - pillow
+  - pip:
+      - huggingface_hub
+  - colmap=3.8
