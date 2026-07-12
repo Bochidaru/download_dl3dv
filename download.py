@@ -379,15 +379,7 @@ if __name__ == '__main__':
         print(f'You have not grant the access yet. Go to relevant huggingface repo (https://huggingface.co/datasets/{repo}) and apply for the access.')
         exit(1)
 
-    try:
-        if download_dataset(params):
-            print('Download Done. Refer to', params.odir)
-        else:
-            print(f'Download to {params.odir} failed. See error message.')
-    except Exception as e:
-        # ghi log lỗi ra file
-        with open("error.log", "a", encoding="utf-8") as f:
-            f.write("=== ERROR ===\n")
-            f.write(str(e) + "\n")
-            f.write(traceback.format_exc() + "\n")
-        print(f"⚠️ Có lỗi xảy ra, đã ghi vào error.log: {e}")
+    if download_dataset(params):
+        print('Download Done. Refer to', params.odir)
+    else:
+        print(f'Download to {params.odir} failed. See error message.')
