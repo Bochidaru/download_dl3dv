@@ -36,8 +36,6 @@ resolution2repo = {
     '4K': 'DL3DV/DL3DV-ALL-4K'
 }
 
-hf_batch = ["1K", "2K", "3K", "4K", "5K", "6K", "7K", "8K", "9K", "10K", "11K"]
-
 
 def verify_access(repo: str):
     """ This function can be used to verify if the user has access to the repo. 
@@ -325,7 +323,6 @@ def download(download_list: list, output_dir: str, is_clean_cache: bool):
                     with zipfile.ZipFile(zip_file, 'r') as zip_ref:
                         zip_ref.extractall(ofile)
                     os.remove(zip_file)
-
             else:
                 print(f'Download {rel_path} failed')
         post_processing(output_path)
@@ -352,7 +349,6 @@ def download_dataset(args):
     os.makedirs(output_dir, exist_ok=True)
 
     download_list = get_download_list(subset_opt, hash_name, reso_opt, file_types, output_dir, scene_per_subset)
-    print(len(download_list))
 
     return download(download_list, output_dir, is_clean_cache)
 
@@ -378,11 +374,21 @@ if __name__ == '__main__':
     params.clean_cache = True
     params.scene_per_subset = 25
 
+    hf_batch = ["8K"]   # fill here
+
     if not verify_access(repo):
         print(f'You have not grant the access yet. Go to relevant huggingface repo (https://huggingface.co/datasets/{repo}) and apply for the access.')
         exit(1)
 
-    if download_dataset(params):
-        print('Download Done. Refer to', params.odir)
-    else:
-        print(f'Download to {params.odir} failed. See error messsage.')
+    try:
+        if download_dataset(params):
+            print('Download Done. Refer to', params.odir)
+        else:
+            print(f'Download to {params.odir} failed. See error message.')
+    except Exception as e:
+        # ghi log lỗi ra file
+        with open("error.log", "a", encoding="utf-8") as f:
+            f.write("=== ERROR ===\n")
+            f.write(str(e) + "\n")
+            f.write(traceback.format_exc() + "\n")
+        print(f"⚠️ Có lỗi xảy ra, đã ghi vào error.log: {e}")
