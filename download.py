@@ -320,10 +320,12 @@ def download(download_list: list, output_dir: str, is_clean_cache: bool):
                 # unzip the file 
                 if rel_path.endswith('.zip'):
                     zip_file = join(output_dir, rel_path)
+                    ofile = output_path  
+                    os.makedirs(ofile, exist_ok=True)
                     with zipfile.ZipFile(zip_file, 'r') as zip_ref:
-                        ofile = join(output_dir, os.path.dirname(rel_path))
                         zip_ref.extractall(ofile)
                     os.remove(zip_file)
+
             else:
                 print(f'Download {rel_path} failed')
         post_processing(output_path)
