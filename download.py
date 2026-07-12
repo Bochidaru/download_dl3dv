@@ -287,47 +287,46 @@ def post_processing(output_path: str):
 
 
 def download(download_list: list, output_dir: str, is_clean_cache: bool):
-    """ Download the dataset based on the download_list and user options.
-
-    :param download_list: the list of files to download, [{'repo', 'rel_path'}]
-    :param output_dir: the output directory 
-    :param reso_opt: the resolution option 
-    :param is_clean_cache: if set, will clean the huggingface cache to save space 
-    """	
     succ_count = 0
     
     for items in tqdm(download_list, desc='Downloading'):
-        for item in items:
-            repo = item['repo']
-            rel_path = item['rel_path']
-            
-            output_path = os.path.join(output_dir, rel_path)
-            output_path = output_path.replace('.zip', '')
-            # skip if already exists locally
-            # if os.path.exists(output_path):
-            #     succ_count += 1
-            #     continue
-            succ = hf_download_path(repo, rel_path, output_dir)
-
-
-            if succ:
-                succ_count += 1
-                if is_clean_cache:
-                    clean_huggingface_cache(output_dir, repo)
+        try:
+            for item in items:
+                repo = item['repo']
+                rel_path = item['rel_path']
                 
-                # unzip the file 
-                if rel_path.endswith('.zip'):
-                    zip_file = join(output_dir, rel_path)
-                    ofile = output_path  
-                    os.makedirs(ofile, exist_ok=True)
-                    with zipfile.ZipFile(zip_file, 'r') as zip_ref:
-                        zip_ref.extractall(ofile)
-                    os.remove(zip_file)
-            else:
-                print(f'Download {rel_path} failed')
-        post_processing(output_path)
+                output_path = os.path.join(output_dir, rel_path)
+                output_path = output_path.replace('.zip', '')
 
-    final_succ_count = succ_count//len(download_list[0])
+                succ = hf_download_path(repo, rel_path, output_dir)
+                if succ:
+                    succ_count += 1
+                    if is_clean_cache:
+                        clean_huggingface_cache(output_dir, repo)
+
+                    if rel_path.endswith('.zip'):
+                        zip_file = join(output_dir, rel_path)
+                        ofile = output_path  
+                        os.makedirs(ofile, exist_ok=True)
+                        with zipfile.ZipFile(zip_file, 'r') as zip_ref:
+                            zip_ref.extractall(ofile)
+                        os.remove(zip_file)
+
+            # chỉ chạy post_processing nếu thư mục tồn tại
+            if os.path.exists(output_path):
+                post_processing(output_path)
+
+        except Exception as e:
+            # ghi log lỗi cho từng item
+            with open("error.log", "a", encoding="utf-8") as f:
+                f.write("=== ERROR ===\n")
+                f.write(f"Item: {items}\n")
+                f.write(str(e) + "\n")
+                f.write(traceback.format_exc() + "\n")
+            print(f"⚠️ Skip {items} vì lỗi: {e}")
+            continue
+
+    final_succ_count = succ_count // len(download_list[0])
     print(f'Summary: {final_succ_count}/{len(download_list)} files downloaded successfully')
     return (final_succ_count) == len(download_list)
 
